@@ -76,7 +76,7 @@ Is one person's judgment worth more than the "average senior" a model gives you 
 - Real corrections from those sessions become test cases: what the agent proposed, and how you actually reacted.
 - Your mentorfile, a generic "apply senior engineer judgment" prompt, and the plain model each answer blind; a grader that doesn't know which is which scores them against what you really said.
 
-The profile shows the result, for example "matched 31 of 40; the generic prompt matched 18". It runs on the owner's machine because the cases are their private sessions, so it's self-reported and labeled that way. The method is Step 4 of the [`mine` skill](plugins/mentorfile/skills/mine/SKILL.md).
+The profile shows the result. The first one, [@leog](https://mentorfile.com/@leog), lost at first: the plain model matched more real corrections than the mentorfile, because it kept applying its loudest principle. After principles learned when they apply, it matched 17.5 of 22 held-out cases, against 17 for a generic "senior engineer" prompt and 15.5 for the plain model. A small edge, published as is; [the story](https://mentorfile.com/#does-it-work). It runs on the owner's machine because the cases are their private sessions, so it's self-reported and labeled that way. The method is Step 4 of the [`mine` skill](plugins/mentorfile/skills/mine/SKILL.md).
 
 ## Tests
 
