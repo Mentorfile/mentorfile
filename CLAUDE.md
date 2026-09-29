@@ -7,6 +7,7 @@ This repo is the public plugin and its marketplace. The site and API (mentorfile
 - `skills/mine` is the one command owners need: mine new sessions, distill, show what changed, leak scan, then publish on an explicit yes. `skills/find` and `skills/get` are for using other people's mentorfiles.
 - The skills call `scripts/mf` (bash, curl, jq; must run on macOS bash 3.2). It talks to `MENTORFILE_URL` (default https://mentorfile.com).
 - Sign-in is GitHub's device flow (`mf login`): no accounts or API keys; the GitHub handle is the identity. The token lives in `~/.mentorfile/token`.
+- mentorfile.com/cli documents every `mf` command and what it sends (`../web/app/cli/page.tsx`); update it in the same change as `mf`. The site's "What it looks for" section mirrors Step 2's categories and Step 5's leak scan in `skills/mine`.
 - Installed mentorfiles are skills named `ask-<handle>` in every `~/.claude*/skills` and in `~/.agents/skills` (Codex).
 
 ## Checks
