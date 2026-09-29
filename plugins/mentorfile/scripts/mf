@@ -142,7 +142,15 @@ publish) # upload ~/.mentorfile/persona as the latest version of your mentorfile
   [ -s "$TOKEN" ] || "$0" login
   [ -s "$TOKEN" ] || die "not signed in yet: finish the GitHub step, then run it again"
   h=$(handle_of "$(jq -r .handle "$PERSONA/mentorfile.json")")
-  persona_json | must -X PUT -H "$(auth)" -H 'content-type: application/json' --data-binary @- "$API/api/personas/$h" | jq -r '"published v\(.version): \(.url)\nset your price at \(.dashboard)"'
+  persona_json | must -X PUT -H "$(auth)" -H 'content-type: application/json' --data-binary @- "$API/api/personas/$h" | jq -r '"published v\(.version): \(.url)",
+      "stats: \(.stats.sessions) sessions, \(.stats.principles) principles (\(.stats.stars) ⭐), \(.stats.playbooks) playbooks",
+      "suggested price (\(.suggested.tier)): " + (if .suggested.once == 0 then "free for now" else "$\(.suggested.once / 100) one-time or $\(.suggested.monthly / 100)/month" end) + ", same rule for everyone: \(.suggested.rule)",
+      "set your price at \(.dashboard)"'
+  ;;
+unpublish) # take your mentorfile off mentorfile.com; copies people already installed stay
+  [ -s "$TOKEN" ] || "$0" login
+  h=$(handle_of "$(jq -r .handle "$PERSONA/mentorfile.json")")
+  must -X DELETE -H "$(auth)" "$API/api/personas/$h" | jq -r '"unpublished @\(.removed)"'
   ;;
 remove) # mf remove <handle...>
   shift
@@ -153,7 +161,7 @@ remove) # mf remove <handle...>
   done
   ;;
 *)
-  echo "usage: mf login | find <query> | get [handle...] | preview | publish | remove <handle...>" >&2
+  echo "usage: mf login | find <query> | get [handle...] | preview | publish | unpublish | remove <handle...>" >&2
   exit 1
   ;;
 esac

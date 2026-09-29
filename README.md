@@ -39,7 +39,8 @@ One command: `/mentorfile:mine`.
 - It reads your Claude Code, Codex and Cursor history on your machine and distills your side of it into principles, playbooks and a voice note, each principle counted by the sessions behind it.
 - It shows you what changed, scans for anything private, and asks before publishing to `mentorfile.com/@yourhandle`. The first time, it signs you in with GitHub: your GitHub account is your mentorfile account, with no signup or API key.
 - Run it again whenever you like. It only reads new sessions and replaces your published version. Edit `~/.mentorfile/persona/` freely, and try it on yourself first with `mf preview`.
-- It's free until you set a price (one-time or monthly) in your dashboard.
+- At the end it sums up what was mined and gives you your public page and a suggested price. Everyone gets the same rule, based on sessions and ⭐ principles ([see it](https://mentorfile.com/#pricing)). It's free until you set a price (one-time or monthly) in your dashboard.
+- `mf unpublish` takes it down any time; copies people already installed stay on their machines.
 
 ## What it looks for
 

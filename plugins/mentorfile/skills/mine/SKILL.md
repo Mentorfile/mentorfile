@@ -154,7 +154,18 @@ Show the user `core.md` and `voice.md` in full on a first publish (only the chan
 
 "Publish this to mentorfile.com/@{HANDLE}?"
 
-Only on an explicit yes, run `MF publish`. On the first run it signs them in with GitHub: it copies a code to their clipboard and opens the browser, where they paste it and click Authorize. Then it uploads, replacing the previous version for everyone who has it. Report the page URL it prints; new mentorfiles are free until they set a price in the dashboard it links.
+Only on an explicit yes, run `MF publish`. On the first run it signs them in with GitHub: it copies a code to their clipboard and opens the browser, where they paste it and click Authorize. Then it uploads, replacing the previous version for everyone who has it. Then finish with the summary in Step 7.
 
 If they say no, stop: everything stays in `~/.mentorfile/persona/`, and `/mentorfile:mine publish` uploads it later.
+
+## Step 7: Final summary
+
+End the run with this summary, filled in from Step 1, the distill result and what `MF publish` printed:
+
+- **Mined:** how many transcripts were read this run (new or grown), from which tools, how many MB of their own messages that came to, and the date range.
+- **Your mentorfile:** sessions behind it, principles (and how many ⭐), playbooks; what changed since the last version (added, strengthened, reworded), or the five strongest core principles on a first run.
+- **Public page:** the `mentorfile.com/@handle` URL.
+- **Price:** the suggested tier and prices exactly as `MF publish` printed them, with its one-line reason (sessions and ⭐ count, same rule for everyone at `mentorfile.com/#pricing`), and the dashboard URL where they set it. New mentorfiles stay free until they do.
+
+If they didn't publish, show the same summary without the page and price, and remind them `/mentorfile:mine publish` uploads it later.
 
