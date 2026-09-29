@@ -5,7 +5,7 @@ description: Search mentorfile.com for mentorfiles (personas distilled from how 
 
 # mentorfile find
 
-`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory.
+`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory. Run it as `bash <path>`; on Windows that needs Git Bash (Claude Code already uses it; Codex users need Git for Windows).
 
 1. Turn the request into a short search: the problem and its domain, in plain words ("postgres migration without downtime", "pricing page copy"). If the user gave no query, derive one from what they're working on in this conversation.
 2. Run `MF find <query>`. If nothing matches, try one broader query.

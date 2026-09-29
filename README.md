@@ -26,6 +26,8 @@ codex plugin marketplace add mentorfile/mentorfile
 codex plugin add mentorfile@mentorfile
 ```
 
+Works on macOS and Linux, and on Windows through Git Bash, which Claude Code on Windows already uses. Codex on Windows needs [Git for Windows](https://gitforwindows.org) installed. The plugin needs only bash and curl; see the [CLI docs](https://mentorfile.com/cli).
+
 ## Use someone's
 
 - `/mentorfile:find <what you're working on>` searches mentorfile.com.

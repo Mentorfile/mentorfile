@@ -5,7 +5,7 @@ description: Install or update mentorfiles from mentorfile.com as local skills f
 
 # mentorfile get
 
-`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory.
+`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory. Run it as `bash <path>`; on Windows that needs Git Bash (Claude Code already uses it; Codex users need Git for Windows).
 
 1. Run `MF get <handle>` (or `MF get` with no handle to update every installed mentorfile).
 2. Handle what it reports:

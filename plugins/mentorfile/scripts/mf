@@ -13,24 +13,33 @@ die() { echo "mf: $*" >&2; exit 1; }
 # jq 1.8.2 release binaries, pinned by checksum (github.com/jqlang/jq/releases/tag/jq-1.8.2).
 ensure_jq() {
   export PATH="$DIR/bin:$PATH"
-  command -v jq >/dev/null && return
-  local os arch name sum
-  case "$(uname -s)" in Darwin) os=macos ;; Linux) os=linux ;; *) die "unsupported OS; install jq and retry" ;; esac
+  type -P jq >/dev/null && return # a real binary; on Windows "jq" is also a wrapper function
+  local os arch name sum ext=""
+  case "$(uname -s)" in
+  Darwin) os=macos ;; Linux) os=linux ;;
+  MINGW* | MSYS* | CYGWIN*) os=windows ext=.exe ;; # Git Bash, which Claude Code uses on Windows
+  *) die "unsupported OS; install jq and retry" ;;
+  esac
   case "$(uname -m)" in arm64 | aarch64) arch=arm64 ;; x86_64 | amd64) arch=amd64 ;; *) die "unsupported CPU; install jq and retry" ;; esac
-  name="jq-$os-$arch"
+  name="jq-$os-$arch$ext"
   case "$name" in
   jq-macos-arm64) sum=2d75340ba57a4b4b4c8708a21c2dc8e958a48aaa8bba13b27f77f6e4c0eca07e ;;
   jq-macos-amd64) sum=e94b266e3c26690550006abe63152b782280f4e14374accdf04cbde844f00bc0 ;;
   jq-linux-arm64) sum=8b85c817833814ddca00a144c33705546355afccf0cf39b188f3cdb48b852309 ;;
   jq-linux-amd64) sum=b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f ;;
+  jq-windows-amd64.exe) sum=a6fc67fedaf9128a3309a1e2ebb8b986aeccf70122ee46d2cb4849e423f0c627 ;;
+  jq-windows-arm64.exe) sum=083b5377392bc57cf27052b6d20a2d927770683bca844632901ff38b4b7b0ac7 ;;
   esac
   echo "mf: jq not found; fetching the official $name build into $DIR/bin (one time)" >&2
   mkdir -p "$DIR/bin"
   curl -fsSL "https://github.com/jqlang/jq/releases/download/jq-1.8.2/$name" -o "$DIR/bin/jq.tmp" || die "couldn't download jq"
   { command -v shasum >/dev/null && shasum -a 256 "$DIR/bin/jq.tmp" || sha256sum "$DIR/bin/jq.tmp"; } | grep -q "^$sum " ||
     { rm -f "$DIR/bin/jq.tmp"; die "jq download failed its checksum; not using it"; }
-  chmod +x "$DIR/bin/jq.tmp" && mv "$DIR/bin/jq.tmp" "$DIR/bin/jq"
+  chmod +x "$DIR/bin/jq.tmp" && mv "$DIR/bin/jq.tmp" "$DIR/bin/jq$ext"
 }
+
+# On Windows, jq writes CRLF line endings unless told not to, which would corrupt every value read from it.
+case "$(uname -s)" in MINGW* | MSYS* | CYGWIN*) jq() { command jq -b "$@"; } ;; esac
 valid() { [[ "$1" =~ ^[a-z0-9][a-z0-9-]{0,38}$ ]] || die "not a GitHub handle: $1"; }
 handle_of() { local h; h=$(printf %s "${1#@}" | tr 'A-Z' 'a-z'); valid "$h"; echo "$h"; }
 
@@ -96,8 +105,8 @@ login) # GitHub device flow in one step: copies the code, opens the browser, wai
     mkdir -p "$DIR" && (umask 077 && echo "$r" >"$DIR/login.json")
   fi
   code=$(jq -r .user_code <<<"$r"); uri=$(jq -r .verification_uri <<<"$r")
-  copy=$(command -v pbcopy || command -v wl-copy || true)
-  browse=$(command -v open || command -v xdg-open || true)
+  copy=$(command -v pbcopy || command -v wl-copy || command -v clip.exe || true)
+  browse=$(command -v open || command -v xdg-open || command -v start || true)
   if [ -z "$copy" ] || [ -z "$browse" ]; then
     echo "Open $uri and enter the code $code, then run mf login again."
     exit 0

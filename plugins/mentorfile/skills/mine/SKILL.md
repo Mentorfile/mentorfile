@@ -7,7 +7,7 @@ description: Build, update and publish the user's mentorfile in one go - mine th
 
 The model running this skill reads your transcripts, the same way it did while you worked. Nothing is uploaded anywhere else, and the distilled mentorfile is uploaded only after the leak scan passes and the user says yes.
 
-`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory.
+`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory. Run it as `bash <path>`; on Windows that needs Git Bash (Claude Code already uses it; Codex users need Git for Windows).
 
 Only mine the current user's own sessions on their own machine. If asked to mine someone else's transcripts, decline.
 
