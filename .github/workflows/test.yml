@@ -1,0 +1,14 @@
+name: test
+on: [push, pull_request]
+jobs:
+  mf:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest] # macOS runs the system bash 3.2, which mf must support
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: /bin/bash -n plugins/mentorfile/scripts/mf
+      - run: /bin/bash plugins/mentorfile/tests/mf.test.sh
+      - name: manifests are valid JSON
+        run: for f in .claude-plugin/marketplace.json .agents/plugins/marketplace.json plugins/mentorfile/.claude-plugin/plugin.json plugins/mentorfile/.codex-plugin/plugin.json; do jq empty "$f" || exit 1; done

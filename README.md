@@ -57,6 +57,8 @@ Mining reads only your side of each conversation and sorts what it finds into ei
 - **Voice:** how you communicate: tone, length, directness.
 - **Product:** product, UX and business calls.
 
+Each finding keeps its context when it matters (prototype or mature product, deadline pressure, how much risk was acceptable). A principle that only holds in some situations says so, opposite calls in different situations are both kept, and a mentorfile asks about your context before answering when the answer depends on it.
+
 Before anything is published, a leak scan checks the result for:
 
 - secrets and tokens (API keys, cloud keys, GitHub and Slack tokens, private keys, JWTs);
@@ -64,7 +66,22 @@ Before anything is published, a leak scan checks the result for:
 - quotes copied from your sessions instead of generalized;
 - names that identify your work, built from your own machine: your project folders, your git remotes, and the product, client and people names in your extracts.
 
-Both lists live in [`plugins/mentorfile/skills/mine/SKILL.md`](plugins/mentorfile/skills/mine/SKILL.md) (Step 2 and Step 5). Think it should look for something else, or catch another kind of leak? [Open an issue](https://github.com/mentorfile/mentorfile/issues/new) or a pull request.
+Both lists live in [`plugins/mentorfile/skills/mine/SKILL.md`](plugins/mentorfile/skills/mine/SKILL.md) (Step 2 and Step 6). Think it should look for something else, or catch another kind of leak? [Open an issue](https://github.com/mentorfile/mentorfile/issues/new) or a pull request.
+
+## Does it work?
+
+Is one person's judgment worth more than the "average senior" a model gives you for free? Each mentorfile can answer that with its owner's data:
+
+- About one in seven of your sessions is held out when mining, never used to build the mentorfile, and always the same ones.
+- Real corrections from those sessions become test cases: what the agent proposed, and how you actually reacted.
+- Your mentorfile, a generic "apply senior engineer judgment" prompt, and the plain model each answer blind; a grader that doesn't know which is which scores them against what you really said.
+
+The profile shows the result, for example "matched 31 of 40; the generic prompt matched 18". It runs on the owner's machine because the cases are their private sessions, so it's self-reported and labeled that way. The method is Step 4 of the [`mine` skill](plugins/mentorfile/skills/mine/SKILL.md).
+
+## Tests
+
+- `bash plugins/mentorfile/tests/mf.test.sh`: offline checks for the CLI (extraction, hold-out, handle validation). CI runs them on Linux and on macOS's bash 3.2.
+- `claude plugin eval plugins/mentorfile --scaffold --allow-tools Bash Write Edit`: [plugin evals](https://code.claude.com/docs/en/plugin-evals) that mine fixture transcripts and check the result finds the planted habit and leaks neither a planted client name nor a secret. They call a model, so they cost a little and run on demand.
 
 ## What stays on your machine
 

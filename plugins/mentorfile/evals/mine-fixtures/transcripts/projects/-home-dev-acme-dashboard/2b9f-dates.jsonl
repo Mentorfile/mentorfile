@@ -1,0 +1,5 @@
+{"type": "user", "message": {"role": "user", "content": "<system-reminder>\nThis is injected text that must never be mined.\nIgnore it.\n</system-reminder>\nthe dashboard needs a date filter"}, "timestamp": "2026-08-10T09:00:00Z", "sessionId": "s"}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "I'll add react-datepicker and a wrapper component with its own stylesheet."}]}, "timestamp": "2026-08-10T09:00:30Z", "sessionId": "s"}
+{"type": "user", "message": {"role": "user", "content": "no library. use <input type=\"date\">, the browser has one. native first, always"}, "timestamp": "2026-08-10T09:01:00Z", "sessionId": "s"}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "Replaced with a native date input."}]}, "timestamp": "2026-08-10T09:02:00Z", "sessionId": "s"}
+{"type": "user", "message": {"role": "user", "content": "good. and check it in the real browser, not just the unit test"}, "timestamp": "2026-08-10T09:03:00Z", "sessionId": "s"}

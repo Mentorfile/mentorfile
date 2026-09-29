@@ -1,0 +1,5 @@
+{"type": "user", "message": {"role": "user", "content": "the search box fires a request on every keystroke, fix it"}, "timestamp": "2026-08-17T15:00:00Z", "sessionId": "s"}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "I'll add lodash and use _.debounce on the handler."}]}, "timestamp": "2026-08-17T15:00:30Z", "sessionId": "s"}
+{"type": "user", "message": {"role": "user", "content": "we don't pull lodash for one function. write the few lines yourself"}, "timestamp": "2026-08-17T15:01:00Z", "sessionId": "s"}
+{"type": "queue-operation", "operation": "enqueue", "content": "and remember: before any new package, check if the platform or the code we already have covers it", "timestamp": "2026-08-17T15:01:10Z", "sessionId": "s"}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "Wrote a small debounce helper instead."}]}, "timestamp": "2026-08-17T15:02:00Z", "sessionId": "s"}

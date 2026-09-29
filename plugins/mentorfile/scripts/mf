@@ -4,7 +4,7 @@
 set -euo pipefail
 
 API="${MENTORFILE_URL:-https://mentorfile.com}"
-DIR="$HOME/.mentorfile"
+DIR="${MENTORFILE_HOME:-$HOME/.mentorfile}" # another home, e.g. for tests
 TOKEN="$DIR/token"
 PERSONA="$DIR/persona"
 
@@ -68,6 +68,10 @@ must() {
 
 auth() { [ -s "$TOKEN" ] && echo "authorization: Bearer $(cat "$TOKEN")" || echo "x-mf-anonymous: 1"; }
 
+# Held out of mining (about 1 in 7), by a checksum of the path below projects/ or sessions/,
+# so the same sessions are held out on every run and every machine.
+held() { [ $(($(printf %s "$1" | cksum | cut -d' ' -f1) % 7)) -eq 0 ]; }
+
 # JSON {handle, files} on stdin -> ask-<handle>/ in every target.
 install() {
   local json h t f
@@ -128,12 +132,19 @@ login) # GitHub device flow in one step: copies the code, opens the browser, wai
   die "timed out waiting for approval; run mf login again"
   ;;
 extract) # mf extract <outdir>: transcript paths on stdin (optionally "path<TAB>label") -> the user's own turns, one file each
-  shift; out="${1:?usage: mf extract <outdir> < paths}"; mkdir -p "$out"; n=0
+  # About 1 in 7 session transcripts (chosen by a checksum of the path, so always the same ones) go to
+  # <outdir>/holdout: never used to build the persona, only to test it (see the mine skill's eval step).
+  shift; out="${1:?usage: mf extract <outdir> < paths}"; mkdir -p "$out/holdout"; n=0
   while IFS=$'\t' read -r f label; do
     [ -f "$f" ] || continue
-    n=$((n + 1)); o="$out/$n.txt"
-    echo "### ${label:-$f}" >"$o"
-    case "${label:-$f}" in
+    src="${label:-$f}"; n=$((n + 1)); o="$out/$n.txt"
+    case "$src" in
+    *history.jsonl) ;;
+    */projects/*.jsonl) held "${src##*/projects/}" && o="$out/holdout/$n.txt" ;;
+    */.codex/sessions/*) held "${src##*/.codex/sessions/}" && o="$out/holdout/$n.txt" ;;
+    esac
+    echo "### $src" >"$o"
+    case "$src" in
     */.codex/*history.jsonl) jq -r '.text // empty' "$f" ;;
     */history.jsonl) jq -r '.display // empty' "$f" ;;
     */.codex/*) jq -r 'select(.type=="response_item" and .payload.role=="user") | .payload.content[]? | select(.type=="input_text") | .text' "$f" ;;
@@ -144,7 +155,9 @@ extract) # mf extract <outdir>: transcript paths on stdin (optionally "path<TAB>
     esac 2>/dev/null | jq -R -s -r 'gsub("<(?<t>[a-z][a-z_-]*)>[\\s\\S]*?</\\k<t>>"; "")' | grep -v '^\s*<' >>"$o" || true
     [ "$(wc -l <"$o")" -gt 1 ] || rm -f "$o"
   done
-  ls "$out" | wc -l | xargs printf '%s files, '; cat "$out"/*.txt 2>/dev/null | wc -c | xargs printf '%s bytes of your own messages\n'
+  for d in "$out" "$out/holdout"; do
+    printf '%s: %s files, %s bytes of your own messages\n' "$d" "$(ls "$d"/*.txt 2>/dev/null | wc -l | tr -d ' ')" "$(cat "$d"/*.txt 2>/dev/null | wc -c | tr -d ' ')"
+  done
   ;;
 find) # mf find <what you're working on>
   shift; [ $# -gt 0 ] || die "usage: mf find <what you're working on>"
