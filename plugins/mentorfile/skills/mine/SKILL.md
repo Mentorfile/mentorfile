@@ -7,6 +7,8 @@ description: Build, update and publish the user's mentorfile in one go - mine th
 
 The model running this skill reads your transcripts, the same way it did while you worked. Nothing is uploaded anywhere else, and the distilled mentorfile is uploaded only after the leak scan passes and the user says yes.
 
+`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory.
+
 Only mine the current user's own sessions on their own machine. If asked to mine someone else's transcripts, decline.
 
 ```
@@ -59,24 +61,24 @@ If nothing is new, say so and stop. Otherwise, before starting, tell the user ho
 
 ## Step 2: Extract, in parallel
 
-Group the work into batches of roughly 4–6 MB of raw transcript. If you can run subagents, run one per batch, all launched at once; otherwise work through the batches one by one. Each batch gets the prompt below with `{FILES}` and `{OUTPATH}` (`~/.mentorfile/mining/<YYYY-MM-DD>-<batch-name>.md`) filled in.
+First pull the user's own messages out of the transcripts with the CLI. It keeps only what they typed (skipping model replies, tool output and injected blocks), so years of history shrink to a few MB:
+
+```bash
+T="${TMPDIR:-/tmp}/mentorfile-turns"; rm -rf "$T"
+MF extract "$T" < work-list.txt   # one path per line; for deltas "delta-file<TAB>original-path"
+```
+
+Each `$T/N.txt` starts with `### <original transcript path>`. Group them into batches of roughly 500 KB (largest first). If you can run subagents, run one per batch, all launched at once; otherwise work through the batches one by one. Each batch gets the prompt below with `{FILES}` and `{OUTPATH}` (`~/.mentorfile/mining/<YYYY-MM-DD>-<batch-name>.md`) filled in.
 
 ---
 
-You are mining AI session transcripts to distill the judgment of the person who wrote them: how they work, how they decide, what they correct, what they care about. Their own messages are the signal; the assistant's output is only context. You are extracting judgment, not code.
+You are mining AI session transcripts to distill the judgment of the person who wrote them: how they work, how they decide, what they correct, what they care about. You are extracting judgment, not code.
 
-FILES TO MINE:
+FILES TO MINE (already-extracted messages of the user; each source starts with `### <path to the raw transcript>`):
 {FILES}
 
-1. Pull the user's own messages:
-   - Claude Code, typed: `jq -r 'select(.type=="user") | .message.content | if type=="string" then . elif type=="array" then (.[] | select(.type=="text") | .text) else empty end' FILE`
-   - Claude Code, typed while the agent was busy (often the sharpest corrections): `jq -r 'select(.type=="queue-operation" and .operation=="enqueue") | .content' FILE`
-   - Codex: `jq -r 'select(.type=="response_item" and .payload.role=="user") | .payload.content[]? | select(.type=="input_text") | .text' FILE`
-   - `history.jsonl`, one prompt per line: `.display` (Claude Code) or `.text` (Codex). Dense signal; skip automated prompts.
-   - ChatGPT export: `mapping[*].message` where `author.role == "user"`. claude.ai export: `chat_messages[]` where `sender == "human"`.
-   - Anything else: inspect the first lines and adapt.
-2. Ignore injected content: blocks starting with `<` such as `<system-reminder>`, `<command-name>`, `<recommended_plugins>`; tool results; pasted logs and stack traces (though what they chose to paste can be signal).
-3. For messages reacting to the agent's work, read the surrounding assistant turn to see what was being corrected or approved.
+1. Read all of it, in chunks if large. Ignore anything that still looks injected (system text, tool output, skill instructions, pasted logs), though what they chose to paste can be signal.
+2. For messages reacting to the agent's work (corrections, approvals), grep the raw transcript at the `###` path for the surrounding assistant turn to see what was being corrected, and for the message date (`timestamp`).
 
 EXTRACT these categories:
 - CORRECTIONS: they redirect or reject the agent's approach. What was wrong, what they wanted instead.
@@ -156,4 +158,3 @@ Only on an explicit yes, run `MF publish`. On the first run it signs them in wit
 
 If they say no, stop: everything stays in `~/.mentorfile/persona/`, and `/mentorfile:mine publish` uploads it later.
 
-`MF` is the CLI at `scripts/mf` in the plugin root, two folders up from this skill's directory.

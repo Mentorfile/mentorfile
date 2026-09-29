@@ -93,6 +93,25 @@ login) # GitHub device flow in one step: copies the code, opens the browser, wai
   done
   die "timed out waiting for approval; run mf login again"
   ;;
+extract) # mf extract <outdir>: transcript paths on stdin (optionally "path<TAB>label") -> the user's own turns, one file each
+  shift; out="${1:?usage: mf extract <outdir> < paths}"; mkdir -p "$out"; n=0
+  while IFS=$'\t' read -r f label; do
+    [ -f "$f" ] || continue
+    n=$((n + 1)); o="$out/$n.txt"
+    echo "### ${label:-$f}" >"$o"
+    case "${label:-$f}" in
+    */.codex/*history.jsonl) jq -r '.text // empty' "$f" ;;
+    */history.jsonl) jq -r '.display // empty' "$f" ;;
+    */.codex/*) jq -r 'select(.type=="response_item" and .payload.role=="user") | .payload.content[]? | select(.type=="input_text") | .text' "$f" ;;
+    *.jsonl)
+      jq -r 'select(.type=="user") | .message.content | if type=="string" then . elif type=="array" then (.[] | select(.type=="text") | .text) else empty end' "$f"
+      jq -r 'select(.type=="queue-operation" and .operation=="enqueue") | .content // empty' "$f" ;;
+    *) cat "$f" ;; # exports and anything else: the agent reads them as is
+    esac 2>/dev/null | perl -0pe 's/<([a-z][a-z_-]*)>.*?<\/\1>//gs' | grep -v '^\s*<' >>"$o" || true
+    [ "$(wc -l <"$o")" -gt 1 ] || rm -f "$o"
+  done
+  ls "$out" | wc -l | xargs printf '%s files, '; cat "$out"/*.txt 2>/dev/null | wc -c | xargs printf '%s bytes of your own messages\n'
+  ;;
 find) # mf find <what you're working on>
   shift; [ $# -gt 0 ] || die "usage: mf find <what you're working on>"
   must -G "$API/api/personas" --data-urlencode "q=$*" |

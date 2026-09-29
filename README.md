@@ -41,6 +41,28 @@ One command: `/mentorfile:mine`.
 - Run it again whenever you like. It only reads new sessions and replaces your published version. Edit `~/.mentorfile/persona/` freely, and try it on yourself first with `mf preview`.
 - It's free until you set a price (one-time or monthly) in your dashboard.
 
+## What it looks for
+
+Mining reads only your side of each conversation and sorts what it finds into eight kinds:
+
+- **Corrections:** you stopped or redirected the agent: what was wrong, what you wanted.
+- **Standards:** rules you set unprompted (always, never, prefer, don't).
+- **Decisions:** choices between options, and why.
+- **Details:** things you caught that were missed: edge cases, naming, copy, polish.
+- **Process:** how you plan, verify, test, review and ship.
+- **Stack:** the tools you use and what you think of them.
+- **Voice:** how you communicate: tone, length, directness.
+- **Product:** product, UX and business calls.
+
+Before anything is published, a leak scan checks the result for:
+
+- secrets and tokens (API keys, cloud keys, GitHub and Slack tokens, private keys, JWTs);
+- emails, URLs, IP addresses and file paths;
+- quotes copied from your sessions instead of generalized;
+- names that identify your work, built from your own machine: your project folders, your git remotes, and the product, client and people names in your extracts.
+
+Both lists live in [`plugins/mentorfile/skills/mine/SKILL.md`](plugins/mentorfile/skills/mine/SKILL.md) (Step 2 and Step 5). Think it should look for something else, or catch another kind of leak? [Open an issue](https://github.com/mentorfile/mentorfile/issues/new) or a pull request.
+
 ## What stays on your machine
 
 - Your transcripts. Mining runs locally through the model you already use; nothing is uploaded anywhere else.
