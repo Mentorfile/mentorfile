@@ -68,7 +68,10 @@ Both lists live in [`plugins/mentorfile/skills/mine/SKILL.md`](plugins/mentorfil
 
 - Your transcripts. Mining runs locally through the model you already use; nothing is uploaded anywhere else.
 - The raw extracts with verbatim quotes (`~/.mentorfile/mining`) and the evidence file linking principles to sessions.
-- What gets published is principles, playbooks and a voice note, scanned for quotes, code, paths, secrets and the names of your clients, employers and products before you confirm.
+
+## What gets published
+
+Only your principles, playbooks, a voice note and the profile line that goes with them. Nothing is uploaded until the [leak scan](#what-it-looks-for) is clean and you say yes. The [CLI docs](https://mentorfile.com/cli) list every command and exactly what it sends.
 
 ## Layout
 
