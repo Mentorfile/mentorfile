@@ -1,0 +1,20 @@
+{
+  "name": "mentorfile",
+  "interface": {
+    "displayName": "Mentorfile"
+  },
+  "plugins": [
+    {
+      "name": "mentorfile",
+      "source": {
+        "source": "local",
+        "path": "./plugins/mentorfile"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

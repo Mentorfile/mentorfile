@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "mentorfile",
+  "description": "Install someone's judgment. Mine your own into a mentorfile and share or sell it.",
+  "owner": {
+    "name": "Leo Giovanetti",
+    "url": "https://github.com/leog"
+  },
+  "plugins": [
+    {
+      "name": "mentorfile",
+      "source": "./plugins/mentorfile",
+      "description": "Find and install mentorfiles (/mentorfile:find, /mentorfile:get), or build and publish your own (/mentorfile:mine).",
+      "category": "productivity"
+    }
+  ]
+}

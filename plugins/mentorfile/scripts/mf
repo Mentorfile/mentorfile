@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# mf: the mentorfile CLI behind the plugin's skills. Needs bash, curl and jq.
+set -euo pipefail
+
+API="${MENTORFILE_URL:-https://mentorfile.com}"
+DIR="$HOME/.mentorfile"
+TOKEN="$DIR/token"
+PERSONA="$DIR/persona"
+
+die() { echo "mf: $*" >&2; exit 1; }
+valid() { [[ "$1" =~ ^[a-z0-9][a-z0-9-]{0,38}$ ]] || die "not a GitHub handle: $1"; }
+handle_of() { local h; h=$(printf %s "${1#@}" | tr 'A-Z' 'a-z'); valid "$h"; echo "$h"; }
+
+# Skill folders to install into: every Claude Code config dir, plus Codex's user skills.
+targets() {
+  local d
+  for d in "$HOME"/.claude*/; do [ -d "$d" ] && echo "${d}skills"; done
+  [ -d "$HOME/.codex" ] && echo "$HOME/.agents/skills"
+  true
+}
+
+# curl that prints the body and returns non-zero on HTTP errors, keeping the server's message.
+call() {
+  local out code
+  out=$(mktemp)
+  code=$(curl -sS -o "$out" -w '%{http_code}' "$@") || { rm -f "$out"; die "can't reach $API"; }
+  cat "$out"; rm -f "$out"
+  [ "${code:0:1}" = 2 ] || return "$((code / 100))"
+}
+
+# call, but exit with the server's error message on failure.
+must() {
+  local out
+  if out=$(call "$@"); then echo "$out"; else die "$(jq -r '.error // .' <<<"$out" 2>/dev/null || echo "$out")"; fi
+}
+
+auth() { [ -s "$TOKEN" ] && echo "authorization: Bearer $(cat "$TOKEN")" || echo "x-mf-anonymous: 1"; }
+
+# JSON {handle, files} on stdin -> ask-<handle>/ in every target.
+install() {
+  local json h t f
+  json=$(cat)
+  [ -n "$json" ] || exit 1 # the request already reported its error
+  h=$(jq -r .handle <<<"$json"); valid "$h"
+  targets | while IFS= read -r t; do
+    mkdir -p "$t/ask-$h"
+    for f in SKILL.md principles.md playbooks.md; do
+      jq -r --arg f "$f" '.files[$f] // ""' <<<"$json" >"$t/ask-$h/$f"
+    done
+    echo "$h" >"$t/ask-$h/.mentorfile"
+    echo "installed $t/ask-$h"
+  done
+}
+
+persona_json() {
+  [ -f "$PERSONA/mentorfile.json" ] || die "no persona yet. Run /mentorfile:mine first."
+  jq -n --slurpfile m "$PERSONA/mentorfile.json" \
+    --rawfile voice "$PERSONA/voice.md" --rawfile core "$PERSONA/core.md" \
+    --rawfile principles "$PERSONA/principles.md" --rawfile playbooks "$PERSONA/playbooks.md" \
+    '$m[0] + {voice: $voice, core: $core, principles: $principles, playbooks: $playbooks}'
+}
+
+case "${1:-}" in
+login) # GitHub device flow in one step: copies the code, opens the browser, waits for approval
+  if [ -f "$DIR/login.json" ] && jq -e '.created + .expires_in > now' "$DIR/login.json" >/dev/null; then
+    r=$(cat "$DIR/login.json") # a code from an earlier run is still valid: keep waiting on it
+  else
+    id=$(must "$API/api/cli" | jq -r .githubClientId)
+    r=$(must -X POST -H 'accept: application/json' -d "client_id=$id&scope=" https://github.com/login/device/code |
+      jq --arg id "$id" '. + {client_id: $id, created: now}')
+    mkdir -p "$DIR" && (umask 077 && echo "$r" >"$DIR/login.json")
+  fi
+  code=$(jq -r .user_code <<<"$r"); uri=$(jq -r .verification_uri <<<"$r")
+  copy=$(command -v pbcopy || command -v wl-copy || true)
+  browse=$(command -v open || command -v xdg-open || true)
+  if [ -z "$copy" ] || [ -z "$browse" ]; then
+    echo "Open $uri and enter the code $code, then run mf login again."
+    exit 0
+  fi
+  printf %s "$code" | "$copy"; "$browse" "$uri" >/dev/null 2>&1 || true
+  echo "GitHub is open in your browser and the code $code is on your clipboard: paste it and click Authorize." >&2
+  interval=$(jq -r .interval <<<"$r")
+  form="client_id=$(jq -r .client_id <<<"$r")&device_code=$(jq -r .device_code <<<"$r")&grant_type=urn:ietf:params:oauth:grant-type:device_code"
+  for _ in $(seq 180); do
+    sleep "$interval"
+    t=$(call -X POST -H 'accept: application/json' -d "$form" https://github.com/login/oauth/access_token)
+    case $(jq -r '.error // "ok"' <<<"$t") in
+    ok) (umask 077 && jq -r .access_token <<<"$t" >"$TOKEN"); rm -f "$DIR/login.json"; echo "signed in"; exit 0 ;;
+    authorization_pending) ;;
+    slow_down) interval=$((interval + 5)) ;;
+    *) rm -f "$DIR/login.json"; die "$(jq -r '.error_description // .error' <<<"$t")" ;;
+    esac
+  done
+  die "timed out waiting for approval; run mf login again"
+  ;;
+find) # mf find <what you're working on>
+  shift; [ $# -gt 0 ] || die "usage: mf find <what you're working on>"
+  must -G "$API/api/personas" --data-urlencode "q=$*" |
+    jq -r 'if length == 0 then "no mentorfiles match" else .[] | "@\(.handle) · \(.price) · \(.name): \(.description)\n  \(.areas) · \(.sessions) sessions · \(.url)" end'
+  ;;
+get) # mf get <handle...>; no handle updates everything installed
+  shift
+  if [ $# -eq 0 ]; then
+    set -- $(cat "$HOME"/.claude*/skills/ask-*/.mentorfile "$HOME"/.agents/skills/ask-*/.mentorfile 2>/dev/null | sort -u)
+    [ $# -gt 0 ] || die "no mentorfiles installed yet"
+  fi
+  for arg in "$@"; do
+    h=$(handle_of "$arg")
+    if body=$(call -H "$(auth)" "$API/api/personas/$h/download"); then
+      install <<<"$body"
+    else
+      case $? in
+      4) jq -r '.error // "failed"' <<<"$body" | sed "s/^/@$h: /" ;;
+      *) echo "@$h: server error: $body" ;;
+      esac
+    fi
+  done
+  ;;
+preview) # install your own unpublished persona locally, to try before publishing
+  persona_json | must -X POST -H 'content-type: application/json' --data-binary @- "$API/api/preview" | install
+  ;;
+publish) # upload ~/.mentorfile/persona as the latest version of your mentorfile
+  [ -s "$TOKEN" ] || "$0" login
+  [ -s "$TOKEN" ] || die "not signed in yet: finish the GitHub step, then run it again"
+  h=$(handle_of "$(jq -r .handle "$PERSONA/mentorfile.json")")
+  persona_json | must -X PUT -H "$(auth)" -H 'content-type: application/json' --data-binary @- "$API/api/personas/$h" | jq -r '"published v\(.version): \(.url)\nset your price at \(.dashboard)"'
+  ;;
+remove) # mf remove <handle...>
+  shift
+  for arg in "$@"; do
+    h=$(handle_of "$arg")
+    targets | while IFS= read -r t; do rm -rf "${t:?}/ask-$h"; done
+    echo "removed ask-$h"
+  done
+  ;;
+*)
+  echo "usage: mf login | find <query> | get [handle...] | preview | publish | remove <handle...>" >&2
+  exit 1
+  ;;
+esac

@@ -1,0 +1,12 @@
+{
+  "name": "mentorfile",
+  "version": "0.3.0",
+  "description": "Install someone's judgment as a skill, or mine your own AI sessions into a mentorfile and share or sell it.",
+  "author": {
+    "name": "Leo Giovanetti",
+    "url": "https://github.com/leog"
+  },
+  "homepage": "https://mentorfile.com",
+  "repository": "https://github.com/mentorfile/mentorfile",
+  "license": "MIT"
+}
