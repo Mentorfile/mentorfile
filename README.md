@@ -92,6 +92,10 @@ The profile shows the result. The first one, [@leog](https://mentorfile.com/@leo
 
 Only your principles, playbooks, a voice note and the profile line that goes with them. Nothing is uploaded until the [leak scan](#what-it-looks-for) is clean and you say yes. The [CLI docs](https://mentorfile.com/cli) list every command and exactly what it sends.
 
+## Related work
+
+[Distilly](https://github.com/titanwings/distilly) (formerly Colleague Skill) got there first: it distills a person's experience, judgment and voice into an Agent Skill from messages, documents and public sources, for colleagues, mentors, public figures or yourself. mentorfile takes a narrower path: only your own engineering judgment, mined from your own AI coding sessions, published by you, with a held-out score on how well it predicts your calls.
+
 ## Layout
 
 ```
