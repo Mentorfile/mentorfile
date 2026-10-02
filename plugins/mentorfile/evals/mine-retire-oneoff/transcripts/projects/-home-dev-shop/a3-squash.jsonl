@@ -1,0 +1,3 @@
+{"type": "user", "message": {"role": "user", "content": "merge the coupon PR"}, "timestamp": "2026-03-16T10:00:00Z", "sessionId": "s"}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "Done, merged with a merge commit."}]}, "timestamp": "2026-03-16T10:01:00Z", "sessionId": "s"}
+{"type": "user", "message": {"role": "user", "content": "I told you, we squash-merge. redo it as a squash"}, "timestamp": "2026-03-16T10:02:00Z", "sessionId": "s"}

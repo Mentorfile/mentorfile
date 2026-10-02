@@ -1,0 +1,3 @@
+{"type": "user", "message": {"role": "user", "content": "merge the search PR"}, "timestamp": "2026-09-08T10:00:00Z", "sessionId": "s"}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "I'll squash-merge it to keep main tidy."}]}, "timestamp": "2026-09-08T10:01:00Z", "sessionId": "s"}
+{"type": "user", "message": {"role": "user", "content": "merge commit, not squash. we keep each commit now"}, "timestamp": "2026-09-08T10:02:00Z", "sessionId": "s"}

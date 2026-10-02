@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: mine-retire-oneoff
+description: A newer, explicit and repeated change of mind retires an older rule with more sessions; a one-off stated as a rule stays; a one-off fix does not become a principle.
+tags: [mine]
+context:
+  scaffold_script: scaffold.sh

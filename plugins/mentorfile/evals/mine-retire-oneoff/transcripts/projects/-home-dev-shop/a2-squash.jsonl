@@ -1,0 +1,3 @@
+{"type": "user", "message": {"role": "user", "content": "merge the checkout PR, it's approved"}, "timestamp": "2026-02-09T10:00:00Z", "sessionId": "s"}
+{"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": "Merging with a merge commit to keep the branch history."}]}, "timestamp": "2026-02-09T10:01:00Z", "sessionId": "s"}
+{"type": "user", "message": {"role": "user", "content": "squash it, always squash-merge our PRs"}, "timestamp": "2026-02-09T10:02:00Z", "sessionId": "s"}
