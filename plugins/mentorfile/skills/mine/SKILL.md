@@ -136,7 +136,7 @@ Test the persona against real calls it has never seen: the corrections in the he
    - `senior`: told only "Apply senior software engineer judgment."
    - `plain`: no extra instruction.
 3. **Grading.** Blind, three times. Build the grading file yourself: for each case, `truth` plus the three answers shuffled into A/B/C, with a fresh shuffle each round and the label-to-arm key kept in a file the grader never reads. Three separate subagents each grade one round: 1 if an answer raises the same concern and pushes in the same direction as the user did, 0.5 if partly, 0 otherwise. Unblind, average the three rounds per arm (round to the nearest half), and write `~/.mentorfile/eval/result.json`.
-4. Add to `mentorfile.json`: `"eval": {"cases": N, "persona": X, "senior": Y, "plain": Z, "date": "YYYY-MM-DD"}` with the summed scores (halves allowed). The profile shows it as self-reported, with the method linked.
+4. Add to `mentorfile.json`: `"eval": {"cases": N, "persona": X, "senior": Y, "plain": Z, "date": "YYYY-MM-DD", "perCase": {"persona": [...], "senior": [...], "plain": [...]}}`: the summed scores (halves allowed) and, in case order, each case's score averaged over the three rounds (0 to 1). The site uses the per-case scores to compute a paired 95% margin and shows "ahead", "behind" or "a tie" against each baseline; with fewer than 20 cases it shows "early signal" instead of a verdict. Tell the user which it will be.
 
 Everything under `~/.mentorfile/eval/` holds real quotes and stays on this machine.
 
